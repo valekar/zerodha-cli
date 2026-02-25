@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt::Display;
 
 // ==================== INSTRUMENTS ====================
 
@@ -70,6 +71,19 @@ pub enum Exchange {
     CDS,
 }
 
+impl Display for Exchange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Exchange::NSE => write!(f, "NSE"),
+            Exchange::BSE => write!(f, "BSE"),
+            Exchange::NFO => write!(f, "NFO"),
+            Exchange::BFO => write!(f, "BFO"),
+            Exchange::MCX => write!(f, "MCX"),
+            Exchange::CDS => write!(f, "CDS"),
+        }
+    }
+}
+
 // ==================== ORDERS ====================
 
 /// Order
@@ -113,6 +127,19 @@ pub enum OrderStatus {
     ValidationPending,
 }
 
+impl Display for OrderStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OrderStatus::Open => write!(f, "OPEN"),
+            OrderStatus::Complete => write!(f, "COMPLETE"),
+            OrderStatus::Cancelled => write!(f, "CANCELLED"),
+            OrderStatus::Rejected => write!(f, "REJECTED"),
+            OrderStatus::TriggerPending => write!(f, "TRIGGER PENDING"),
+            OrderStatus::ValidationPending => write!(f, "VALIDATION PENDING"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum OrderVariety {
@@ -120,6 +147,17 @@ pub enum OrderVariety {
     AMO,
     CO,
     Iceberg,
+}
+
+impl Display for OrderVariety {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OrderVariety::Regular => write!(f, "regular"),
+            OrderVariety::AMO => write!(f, "amo"),
+            OrderVariety::CO => write!(f, "co"),
+            OrderVariety::Iceberg => write!(f, "iceberg"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -132,11 +170,31 @@ pub enum OrderType {
     SLM,
 }
 
+impl Display for OrderType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OrderType::Market => write!(f, "MARKET"),
+            OrderType::Limit => write!(f, "LIMIT"),
+            OrderType::SL => write!(f, "SL"),
+            OrderType::SLM => write!(f, "SL-M"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionType {
     Buy,
     Sell,
+}
+
+impl Display for TransactionType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TransactionType::Buy => write!(f, "BUY"),
+            TransactionType::Sell => write!(f, "SELL"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -147,6 +205,16 @@ pub enum Validity {
     TTL,
 }
 
+impl Display for Validity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Validity::Day => write!(f, "DAY"),
+            Validity::IOC => write!(f, "IOC"),
+            Validity::TTL => write!(f, "TTL"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Product {
@@ -154,6 +222,19 @@ pub enum Product {
     MIS,
     NRML,
     MTF,
+    BO,
+}
+
+impl Display for Product {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Product::CNC => write!(f, "CNC"),
+            Product::MIS => write!(f, "MIS"),
+            Product::NRML => write!(f, "NRML"),
+            Product::MTF => write!(f, "MTF"),
+            Product::BO => write!(f, "BO"),
+        }
+    }
 }
 
 // ==================== TRADES ====================
@@ -171,6 +252,8 @@ pub struct Trade {
     pub average_price: f64,
     pub quantity: i32,
     pub fill_timestamp: String,
+    #[serde(rename = "trade_timestamp")]
+    pub trade_timestamp: Option<String>,
 }
 
 // ==================== QUOTES ====================
@@ -197,24 +280,31 @@ pub struct OHLC {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DepthEntry {
+    pub quantity: i32,
+    pub price: f64,
+    pub orders: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Depth {
-    pub buy: Vec<[f64; 3]>,
-    pub sell: Vec<[f64; 3]>,
+    pub buy: Vec<DepthEntry>,
+    pub sell: Vec<DepthEntry>,
 }
 
 /// Quote response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QuoteResponse {
     pub data: HashMap<String, Quote>,
 }
 
 /// OHLC response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OHLCResponse {
     pub data: HashMap<String, OHLCData>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OHLCData {
     pub instrument_token: u64,
     pub last_price: f64,
@@ -225,12 +315,12 @@ pub struct OHLCData {
 }
 
 /// LTP response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LTPResponse {
     pub data: HashMap<String, LTPData>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LTPData {
     pub instrument_token: u64,
     pub last_price: f64,
@@ -289,7 +379,7 @@ pub struct Position {
 }
 
 /// Positions response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PositionsResponse {
     pub net: Vec<Position>,
     pub day: Vec<Position>,
@@ -329,9 +419,22 @@ pub struct MarginUtilised {
 }
 
 /// Margin response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MarginResponse {
-    pub data: HashMap<String, Margin>,
+    pub equity: Margin,
+    pub commodity: Margin,
+}
+
+/// Equity margins
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EquityMargins {
+    pub equity: Margin,
+}
+
+/// Commodity margins
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommodityMargins {
+    pub commodity: Margin,
 }
 
 // ==================== GTT ====================

@@ -1,6 +1,6 @@
 //! Kite Connect API Client
 
-use crate::api::RateLimiter;
+use crate::api::rate_limiter::RateLimiter;
 use crate::error::ZerodhaError;
 use crate::models::*;
 use anyhow::{Context, Result};
@@ -9,6 +9,10 @@ use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+
+// Crypto imports
+use hex;
+use sha2::Digest;
 
 #[allow(unused_imports)]
 use serde::Deserialize;
@@ -78,7 +82,10 @@ impl KiteConnectClient {
             .http_client
             .request(method, &url)
             .header("X-Kite-Version", "3")
-            .header("Authorization", format!("token {}:{}", self.api_key, access_token))
+            .header(
+                "Authorization",
+                format!("token {}:{}", self.api_key, access_token),
+            )
             .header("User-Agent", "zerodha-cli/1.0.0"))
     }
 
@@ -88,10 +95,7 @@ impl KiteConnectClient {
         self.rate_limiter.acquire().await?;
 
         // Send request
-        let response = req_builder
-            .send()
-            .await
-            .context("Failed to send request")?;
+        let response = req_builder.send().await.context("Failed to send request")?;
 
         let status = response.status();
 
@@ -101,7 +105,10 @@ impl KiteConnectClient {
         }
 
         // Parse response
-        let text = response.text().await.context("Failed to read response text")?;
+        let text = response
+            .text()
+            .await
+            .context("Failed to read response text")?;
 
         serde_json::from_str(&text).context("Failed to parse response JSON")
     }
@@ -119,24 +126,20 @@ impl KiteConnectClient {
         let redacted_text = redact_secrets(&text);
 
         match status_code {
-            401 => {
-                Err(anyhow::anyhow!(
-                    "Authentication failed: {}. Please run 'kite auth login'",
-                    redacted_text
-                ))
-            }
-            403 => {
-                Err(anyhow::anyhow!("Forbidden: {}. Access denied", redacted_text))
-            }
-            429 => {
-                Err(ZerodhaError::RateLimit.into())
-            }
-            400..=499 => {
-                Err(anyhow::anyhow!("Client error: {}", redacted_text))
-            }
-            500..=599 => {
-                Err(anyhow::anyhow!("Server error: {}. Please try again later", redacted_text))
-            }
+            401 => Err(anyhow::anyhow!(
+                "Authentication failed: {}. Please run 'kite auth login'",
+                redacted_text
+            )),
+            403 => Err(anyhow::anyhow!(
+                "Forbidden: {}. Access denied",
+                redacted_text
+            )),
+            429 => Err(ZerodhaError::RateLimit.into()),
+            400..=499 => Err(anyhow::anyhow!("Client error: {}", redacted_text)),
+            500..=599 => Err(anyhow::anyhow!(
+                "Server error: {}. Please try again later",
+                redacted_text
+            )),
             _ => Err(anyhow::anyhow!("Unexpected error: {}", redacted_text)),
         }
     }
@@ -163,7 +166,9 @@ impl KiteConnectClient {
             "checksum": checksum,
         });
 
-        let req = self.build_request(Method::POST, "/session/token").json(&body);
+        let req = self
+            .build_request(Method::POST, "/session/token")
+            .json(&body);
 
         #[derive(Deserialize)]
         #[allow(dead_code)]
@@ -176,8 +181,7 @@ impl KiteConnectClient {
         let response: SessionData = self.execute(req).await?;
 
         // Store access token
-        self.set_access_token(response.access_token.clone())
-            .await?;
+        self.set_access_token(response.access_token.clone()).await?;
 
         Ok(response.access_token)
     }
@@ -195,18 +199,22 @@ impl KiteConnectClient {
 
         // Instruments are returned as CSV text
         self.rate_limiter.acquire().await?;
-        let response = req
-            .send()
-            .await
-            .context("Failed to fetch instruments")?;
+        let response = req.send().await.context("Failed to fetch instruments")?;
 
         if !response.status().is_success() {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
-            return Err(anyhow::anyhow!("Failed to fetch instruments: {} - {}", status, text));
+            return Err(anyhow::anyhow!(
+                "Failed to fetch instruments: {} - {}",
+                status,
+                text
+            ));
         }
 
-        let text = response.text().await.context("Failed to read instruments CSV")?;
+        let text = response
+            .text()
+            .await
+            .context("Failed to read instruments CSV")?;
         let mut rdr = csv::Reader::from_reader(text.as_bytes());
         let mut instruments = Vec::new();
 
@@ -216,6 +224,16 @@ impl KiteConnectClient {
         }
 
         Ok(instruments)
+    }
+
+    /// Get specific instrument by exchange and symbol
+    pub async fn get_instrument(&self, exchange: &str, symbol: &str) -> Result<Instrument> {
+        let instruments = self.list_instruments(Some(exchange)).await?;
+
+        instruments
+            .into_iter()
+            .find(|inst| inst.tradingsymbol.eq_ignore_ascii_case(symbol))
+            .ok_or_else(|| anyhow::anyhow!("Instrument not found: {}:{}", exchange, symbol))
     }
 
     // ==================== QUOTES API ====================
@@ -300,27 +318,25 @@ impl KiteConnectClient {
 
     /// Place a new order
     pub async fn place_order(&self, order: &PlaceOrder) -> Result<OrderResponse> {
-        let req = self.build_auth_request(Method::POST, "/orders/regular").await?.json(order);
+        let req = self
+            .build_auth_request(Method::POST, "/orders/regular")
+            .await?
+            .json(order);
         self.execute(req).await
     }
 
     /// Modify an existing order
-    pub async fn modify_order(
-        &self,
-        order_id: &str,
-        order: &ModifyOrder,
-    ) -> Result<OrderResponse> {
+    pub async fn modify_order(&self, order_id: &str, order: &ModifyOrder) -> Result<OrderResponse> {
         let path = format!("/orders/regular/{}", order_id);
-        let req = self.build_auth_request(Method::PUT, &path).await?.json(order);
+        let req = self
+            .build_auth_request(Method::PUT, &path)
+            .await?
+            .json(order);
         self.execute(req).await
     }
 
     /// Cancel an order
-    pub async fn cancel_order(
-        &self,
-        order_id: &str,
-        variety: &str,
-    ) -> Result<CancelResponse> {
+    pub async fn cancel_order(&self, order_id: &str, variety: &str) -> Result<CancelResponse> {
         let path = format!("/orders/{}/{}", variety, order_id);
         let req = self.build_auth_request(Method::DELETE, &path).await?;
         self.execute(req).await
@@ -348,7 +364,9 @@ impl KiteConnectClient {
 
     /// Get holdings
     pub async fn get_holdings(&self) -> Result<Vec<Holding>> {
-        let req = self.build_auth_request(Method::GET, "/portfolio/holdings").await?;
+        let req = self
+            .build_auth_request(Method::GET, "/portfolio/holdings")
+            .await?;
 
         #[derive(Deserialize)]
         struct HoldingsResponse {
@@ -361,13 +379,18 @@ impl KiteConnectClient {
 
     /// Get positions
     pub async fn get_positions(&self) -> Result<PositionsResponse> {
-        let req = self.build_auth_request(Method::GET, "/portfolio/positions").await?;
+        let req = self
+            .build_auth_request(Method::GET, "/portfolio/positions")
+            .await?;
         self.execute(req).await
     }
 
     /// Convert position
     pub async fn convert_position(&self, req: &ConvertPosition) -> Result<()> {
-        let http_req = self.build_auth_request(Method::PUT, "/portfolio/positions").await?.json(req);
+        let http_req = self
+            .build_auth_request(Method::PUT, "/portfolio/positions")
+            .await?
+            .json(req);
         self.execute(http_req).await
     }
 
@@ -375,7 +398,25 @@ impl KiteConnectClient {
 
     /// Get margins
     pub async fn get_margins(&self) -> Result<MarginResponse> {
-        let req = self.build_auth_request(Method::GET, "/user/margins").await?;
+        let req = self
+            .build_auth_request(Method::GET, "/user/margins")
+            .await?;
+        self.execute(req).await
+    }
+
+    /// Get equity margins
+    pub async fn get_equity_margins(&self) -> Result<EquityMargins> {
+        let req = self
+            .build_auth_request(Method::GET, "/user/margins/equity")
+            .await?;
+        self.execute(req).await
+    }
+
+    /// Get commodity margins
+    pub async fn get_commodity_margins(&self) -> Result<CommodityMargins> {
+        let req = self
+            .build_auth_request(Method::GET, "/user/margins/commodity")
+            .await?;
         self.execute(req).await
     }
 
@@ -383,7 +424,9 @@ impl KiteConnectClient {
 
     /// List GTT orders
     pub async fn list_gtt(&self) -> Result<Vec<GTTTrigger>> {
-        let req = self.build_auth_request(Method::GET, "/gtt/triggers").await?;
+        let req = self
+            .build_auth_request(Method::GET, "/gtt/triggers")
+            .await?;
 
         #[derive(Deserialize)]
         struct GTTResponse {
@@ -410,7 +453,10 @@ impl KiteConnectClient {
 
     /// Create GTT order
     pub async fn create_gtt(&self, req: &PlaceGTT) -> Result<GTTResponse> {
-        let http_req = self.build_auth_request(Method::POST, "/gtt/triggers").await?.json(req);
+        let http_req = self
+            .build_auth_request(Method::POST, "/gtt/triggers")
+            .await?
+            .json(req);
         self.execute(http_req).await
     }
 
@@ -450,8 +496,7 @@ fn redact_secrets(text: &str) -> String {
 
 // SHA256 digest using sha2 crate
 fn sha256_digest(input: &str) -> String {
-    use sha2::{Digest, Sha256};
-    let mut hasher = Sha256::new();
+    let mut hasher = sha2::Sha256::new();
     hasher.update(input.as_bytes());
     hex::encode(hasher.finalize())
 }

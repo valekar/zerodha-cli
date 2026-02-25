@@ -2849,7 +2849,10 @@ dependencies = [
  "clap",
  "clap_complete",
  "comfy-table",
+ "rustyline",
+ "serde_json",
  "tokio",
+ "toml",
  "tracing-subscriber",
  "zerodha-cli-core",
 ]

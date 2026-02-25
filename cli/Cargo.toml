@@ -16,7 +16,15 @@ clap.workspace = true
 clap_complete = "4.5"
 comfy-table.workspace = true
 anyhow.workspace = true
+serde_json.workspace = true
 
 # Runtime and logging
 tokio.workspace = true
 tracing-subscriber.workspace = true
+
+# Shell
+rustyline = "14.0"
+shellwords = "1.1.0"
+
+# Config parsing
+toml = "0.8"

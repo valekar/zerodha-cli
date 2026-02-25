@@ -42,11 +42,21 @@ pub struct OutputConfig {
     pub format: String,
 }
 
-fn default_exchange() -> String { "NSE".to_string() }
-fn default_product() -> String { "CNC".to_string() }
-fn default_order_type() -> String { "LIMIT".to_string() }
-fn default_validity() -> String { "DAY".to_string() }
-fn default_format() -> String { "table".to_string() }
+fn default_exchange() -> String {
+    "NSE".to_string()
+}
+fn default_product() -> String {
+    "CNC".to_string()
+}
+fn default_order_type() -> String {
+    "LIMIT".to_string()
+}
+fn default_validity() -> String {
+    "DAY".to_string()
+}
+fn default_format() -> String {
+    "table".to_string()
+}
 
 impl Default for Config {
     fn default() -> Self {
@@ -67,7 +77,7 @@ impl Config {
     /// Load config from file
     pub fn load() -> Result<Self> {
         let config_path = Self::config_path().context("Failed to get config path")?;
-        
+
         if config_path.exists() {
             let content = std::fs::read_to_string(&config_path).context("Failed to read config")?;
             let config: Self = toml::from_str(&content).context("Failed to parse config")?;
@@ -80,7 +90,8 @@ impl Config {
     /// Save config to file
     pub fn save(&self) -> Result<()> {
         let config_path = Self::config_path().context("Failed to get config path")?;
-        let config_dir = config_path.parent()
+        let config_dir = config_path
+            .parent()
             .ok_or_else(|| anyhow::anyhow!("Invalid config path"))?;
 
         std::fs::create_dir_all(config_dir).context("Failed to create config directory")?;
@@ -92,8 +103,8 @@ impl Config {
 
     /// Get config file path
     pub fn config_path() -> Result<PathBuf> {
-        let config_dir = dirs::config_dir()
-            .ok_or_else(|| anyhow::anyhow!("Failed to get config directory"))?;
+        let config_dir =
+            dirs::config_dir().ok_or_else(|| anyhow::anyhow!("Failed to get config directory"))?;
         Ok(config_dir.join("zerodha-cli").join("config.toml"))
     }
 

@@ -31,9 +31,7 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
         println!("\nBrowser opened successfully!");
     }
 
-    println!(
-        "\nAfter completing login in your browser, you'll be redirected to a page"
-    );
+    println!("\nAfter completing login in your browser, you'll be redirected to a page");
     println!("with a 'request_token' parameter in the URL.\n");
     println!("Example URL: https://kite.zerodha.com/connect/login?v=3&api_key=XXX&request_token=abc123\n");
 
@@ -42,10 +40,8 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
 
     // Use tokio for async stdin reading
     let mut request_token = String::new();
-    tokio::task::block_in_place(|| {
-        std::io::stdin().read_line(&mut request_token)
-    })
-    .context("Failed to read request token")?;
+    tokio::task::block_in_place(|| std::io::stdin().read_line(&mut request_token))
+        .context("Failed to read request token")?;
 
     let request_token = request_token.trim();
 
@@ -75,7 +71,10 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
 
     println!("\n✓ Authentication successful!");
     println!("✓ Access token saved to config");
-    println!("✓ Token expires: {}", expiry.format("%Y-%m-%d %H:%M:%S UTC"));
+    println!(
+        "✓ Token expires: {}",
+        expiry.format("%Y-%m-%d %H:%M:%S UTC")
+    );
 
     Ok(access_token)
 }
@@ -129,9 +128,15 @@ pub fn print_status(status: AuthStatus) {
                         let minutes = remaining.num_minutes() % 60;
 
                         println!("Token expires in: {}h {}m", hours, minutes);
-                        println!("Expiry time: {}", expiry_utc.format("%Y-%m-%d %H:%M:%S UTC"));
+                        println!(
+                            "Expiry time: {}",
+                            expiry_utc.format("%Y-%m-%d %H:%M:%S UTC")
+                        );
                     } else {
-                        println!("Token expired: {}", expiry_utc.format("%Y-%m-%d %H:%M:%S UTC"));
+                        println!(
+                            "Token expired: {}",
+                            expiry_utc.format("%Y-%m-%d %H:%M:%S UTC")
+                        );
                     }
                 }
             }

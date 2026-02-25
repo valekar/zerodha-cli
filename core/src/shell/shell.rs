@@ -3,8 +3,8 @@
 use crate::api::KiteConnectClient;
 use crate::config::Config;
 use anyhow::Result;
-use rustyline::{Editor, Config as RLConfig, CompletionType};
 use rustyline::history::DefaultHistory;
+use rustyline::{CompletionType, Config as RLConfig, Editor};
 
 /// Run interactive shell
 pub async fn run(_config: &Config, _api_client: &KiteConnectClient) -> Result<()> {

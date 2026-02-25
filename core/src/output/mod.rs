@@ -2,12 +2,7 @@
 
 use crate::models::{Holding, Instrument, Order, Position};
 use comfy_table::{
-    modifiers::UTF8_ROUND_CORNERS,
-    presets::UTF8_FULL,
-    Attribute,
-    Cell,
-    Color,
-    ContentArrangement,
+    modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, Attribute, Cell, Color, ContentArrangement,
     Table,
 };
 
@@ -32,21 +27,10 @@ impl OutputFormatter for Vec<Holding> {
             .load_preset(UTF8_FULL)
             .apply_modifier(UTF8_ROUND_CORNERS)
             .set_content_arrangement(ContentArrangement::Dynamic)
-            .set_header(vec![
-                "Symbol",
-                "Qty",
-                "Avg Price",
-                "LTP",
-                "P&L",
-                "Day Chg%",
-            ]);
+            .set_header(vec!["Symbol", "Qty", "Avg Price", "LTP", "P&L", "Day Chg%"]);
 
         for holding in self {
-            let pnl_cell = cell_color(
-                format!("₹{:.2}", holding.pnl),
-                holding.pnl >= 0.0,
-                true,
-            );
+            let pnl_cell = cell_color(format!("₹{:.2}", holding.pnl), holding.pnl >= 0.0, true);
 
             let chg_cell = cell_color(
                 format!("{:.2}%", holding.day_change_percentage),
@@ -87,13 +71,7 @@ impl OutputFormatter for Vec<Order> {
             .apply_modifier(UTF8_ROUND_CORNERS)
             .set_content_arrangement(ContentArrangement::Dynamic)
             .set_header(vec![
-                "Order ID",
-                "Symbol",
-                "Type",
-                "Qty",
-                "Price",
-                "Status",
-                "Time",
+                "Order ID", "Symbol", "Type", "Qty", "Price", "Status", "Time",
             ]);
 
         for order in self {
@@ -143,11 +121,7 @@ impl OutputFormatter for Vec<Position> {
             ]);
 
         for position in self {
-            let pnl_cell = cell_color(
-                format!("₹{:.2}", position.pnl),
-                position.pnl >= 0.0,
-                true,
-            );
+            let pnl_cell = cell_color(format!("₹{:.2}", position.pnl), position.pnl >= 0.0, true);
 
             let unrealised_cell = cell_color(
                 format!("₹{:.2}", position.unrealised),
@@ -189,12 +163,7 @@ impl OutputFormatter for Vec<Instrument> {
             .apply_modifier(UTF8_ROUND_CORNERS)
             .set_content_arrangement(ContentArrangement::Dynamic)
             .set_header(vec![
-                "Symbol",
-                "Name",
-                "Exchange",
-                "Segment",
-                "Type",
-                "Lot Size",
+                "Symbol", "Name", "Exchange", "Segment", "Type", "Lot Size",
             ]);
 
         for instrument in self {
@@ -220,7 +189,11 @@ impl OutputFormatter for Vec<Instrument> {
 
 /// Create a colored cell based on value
 fn cell_color(value: String, is_positive: bool, bold: bool) -> Cell {
-    let color = if is_positive { Color::Green } else { Color::Red };
+    let color = if is_positive {
+        Color::Green
+    } else {
+        Color::Red
+    };
 
     let mut cell = Cell::new(value).fg(color);
 
@@ -239,9 +212,7 @@ fn cell_order_status(status: &crate::models::OrderStatus) -> Cell {
         crate::models::OrderStatus::Cancelled => ("CANCELLED", Color::Red),
         crate::models::OrderStatus::Rejected => ("REJECTED", Color::Red),
         crate::models::OrderStatus::TriggerPending => ("TRIGGER PENDING", Color::Cyan),
-        crate::models::OrderStatus::ValidationPending => {
-            ("VALIDATION PENDING", Color::Cyan)
-        }
+        crate::models::OrderStatus::ValidationPending => ("VALIDATION PENDING", Color::Cyan),
     };
 
     Cell::new(text).fg(color)

@@ -46,7 +46,7 @@ pub fn validate_symbol(symbol: &str) -> Result<(String, String)> {
     if parts.len() != 2 {
         bail!("Invalid symbol format. Expected: EXCHANGE:SYMBOL (e.g., NSE:INFY)");
     }
-    
+
     let exchange = parts[0].to_uppercase();
     let tradingsymbol = parts[1].to_uppercase();
 

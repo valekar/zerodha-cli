@@ -851,56 +851,56 @@ Suggestion: Verify symbol format (e.g., NSE:INFY). Use `kite instruments search`
 ## 4. Implementation Checklist
 
 ### Phase 1: Setup & CLI Structure
-- [ ] Task 1.1: Implement main CLI command definitions with clap (Cli, Commands enums) in commands/mod.rs (Ref: 3.1) [medium]
-- [ ] Task 1.2: Implement CLI main entry point in main.rs with config loading and command routing (Ref: 3.11) [medium]
-- [ ] Task 1.3: Add Cargo.toml dependencies (clap, rustyline) to cli crate (Ref: 3.1) [small]
+- [x] Task 1.1: Implement main CLI command definitions with clap (Cli, Commands enums) in commands/mod.rs (Ref: 3.1) [medium]
+- [x] Task 1.2: Implement CLI main entry point in main.rs with config loading and command routing (Ref: 3.11) [medium]
+- [x] Task 1.3: Add Cargo.toml dependencies (clap, rustyline) to cli crate (Ref: 3.1) [small]
 
 ### Phase 2: Auth Commands
-- [ ] Task 2.1: Implement auth command handlers (login, status, logout, setup) in commands/auth.rs (Ref: 3.2) [medium]
-- [ ] Task 2.2: Integrate auth handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 2.1: Implement auth command handlers (login, status, logout, setup) in commands/auth.rs (Ref: 3.2) [medium]
+- [x] Task 2.2: Integrate auth handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 3: Instruments Commands
-- [ ] Task 3.1: Implement instruments command handlers (list, search, get) in commands/instruments.rs (Ref: 3.3) [medium]
-- [ ] Task 3.2: Integrate instruments handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 3.1: Implement instruments command handlers (list, search, get) in commands/instruments.rs (Ref: 3.3) [medium]
+- [x] Task 3.2: Integrate instruments handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 4: Quotes Commands
-- [ ] Task 4.1: Implement quotes command handlers (get, ohlc, ltp) in commands/quotes.rs (Ref: 3.4) [medium]
-- [ ] Task 4.2: Integrate quotes handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 4.1: Implement quotes command handlers (get, ohlc, ltp) in commands/quotes.rs (Ref: 3.4) [medium]
+- [x] Task 4.2: Integrate quotes handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 5: Orders Commands
-- [ ] Task 5.1: Implement orders command handlers (list, get, place, market, modify, cancel, cancel-all, trades) in commands/orders.rs (Ref: 3.5) [large]
-- [ ] Task 5.2: Integrate orders handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 5.1: Implement orders command handlers (list, get, place, market, modify, cancel, cancel-all, trades) in commands/orders.rs (Ref: 3.5) [large]
+- [x] Task 5.2: Integrate orders handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 6: Portfolio Commands
-- [ ] Task 6.1: Implement portfolio command handlers (holdings, positions, convert) in commands/portfolio.rs (Ref: 3.6) [medium]
-- [ ] Task 6.2: Integrate portfolio handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 6.1: Implement portfolio command handlers (holdings, positions, convert) in commands/portfolio.rs (Ref: 3.6) [medium]
+- [x] Task 6.2: Integrate portfolio handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 7: Margins Commands
-- [ ] Task 7.1: Implement margins command handlers (list, equity, commodity) in commands/margins.rs (Ref: 3.7) [medium]
-- [ ] Task 7.2: Integrate margins handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 7.1: Implement margins command handlers (list, equity, commodity) in commands/margins.rs (Ref: 3.7) [medium]
+- [x] Task 7.2: Integrate margins handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 8: GTT Commands
-- [ ] Task 8.1: Implement GTT command handlers (list, get, create, modify, delete) in commands/gtt.rs (Ref: 3.8) [medium]
-- [ ] Task 8.2: Integrate GTT handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 8.1: Implement GTT command handlers (list, get, create, modify, delete) in commands/gtt.rs (Ref: 3.8) [medium]
+- [x] Task 8.2: Integrate GTT handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 9: Status & Shell Commands
-- [ ] Task 9.1: Implement status command handler in commands/status.rs (Ref: 3.9) [small]
-- [ ] Task 9.2: Implement interactive shell with rustyline in commands/shell.rs (Ref: 3.10) [large]
-- [ ] Task 9.3: Integrate status and shell handlers with main CLI command routing (Ref: 3.11) [small]
+- [x] Task 9.1: Implement status command handler in commands/status.rs (Ref: 3.9) [small]
+- [x] Task 9.2: Implement interactive shell with rustyline in commands/shell.rs (Ref: 3.10) [large]
+- [x] Task 9.3: Integrate status and shell handlers with main CLI command routing (Ref: 3.11) [small]
 
 ### Phase 10: Integration & Polish
-- [ ] Task 10.1: Add help text and examples to all clap command definitions (Ref: 3.1) [medium]
-- [ ] Task 10.2: Implement confirmation prompts for destructive commands (Ref: 3.5) [medium]
-- [ ] Task 10.3: Add --dry-run flag to order placement commands (Ref: 3.5) [small]
-- [ ] Task 10.4: Implement error display with context and suggestions (Ref: 3.12) [medium]
+- [x] Task 10.1: Add help text and examples to all clap command definitions (Ref: 3.1) [medium]
+- [x] Task 10.2: Implement confirmation prompts for destructive commands (Ref: 3.5) [medium]
+- [x] Task 10.3: Add --dry-run flag to order placement commands (Ref: 3.5) [small]
+- [x] Task 10.4: Implement error display with context and suggestions (Ref: 3.12) [medium]
 
 ### Phase 11: Build & Lint Verification
-- [ ] Task 11.1: Run `cargo build --release` and fix all compilation errors (Ref: -) [medium]
-- [ ] Task 11.2: Run `cargo clippy --all-targets` and fix all warnings (Ref: -) [medium]
-- [ ] Task 11.3: Run `cargo fmt` to format code (Ref: -) [small]
-- [ ] Task 11.4: Test CLI with basic commands (auth, quotes, orders) (Ref: -) [medium]
-- [ ] Task 11.5: Test interactive shell mode (Ref: -) [medium]
-- [ ] Task 11.6: Test all command groups with example workflows (Ref: -) [large]
+- [x] Task 11.1: Run `cargo build --release` and fix all compilation errors (Ref: -) [medium]
+- [x] Task 11.2: Run `cargo clippy --all-targets` and fix all warnings (Ref: -) [medium]
+- [x] Task 11.3: Run `cargo fmt` to format code (Ref: -) [small]
+- [x] Task 11.4: Test CLI with basic commands (auth, quotes, orders) (Ref: -) [medium]
+- [x] Task 11.5: Test interactive shell mode (Ref: -) [medium]
+- [x] Task 11.6: Test all command groups with example workflows (Ref: -) [large]
 
 ---
 

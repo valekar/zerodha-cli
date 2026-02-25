@@ -12,8 +12,8 @@ pub struct InstrumentCache;
 impl InstrumentCache {
     /// Get cache directory
     pub fn cache_dir() -> Result<PathBuf> {
-        let cache_dir = dirs::cache_dir()
-            .ok_or_else(|| anyhow::anyhow!("Failed to get cache directory"))?;
+        let cache_dir =
+            dirs::cache_dir().ok_or_else(|| anyhow::anyhow!("Failed to get cache directory"))?;
         let dir = cache_dir.join("zerodha-cli").join("instruments");
 
         // Create directory if it doesn't exist
@@ -45,7 +45,9 @@ impl InstrumentCache {
 
         // Check modification time (max 24h)
         let metadata = fs::metadata(&cache_file).context("Failed to read cache metadata")?;
-        let modified = metadata.modified().context("Failed to get modification time")?;
+        let modified = metadata
+            .modified()
+            .context("Failed to get modification time")?;
 
         let modified_time: DateTime<Utc> = modified.into();
         let now = Utc::now();
@@ -67,8 +69,7 @@ impl InstrumentCache {
         let mut instruments = Vec::new();
 
         for result in rdr.deserialize() {
-            let instrument: Instrument =
-                result.context("Failed to parse instrument from cache")?;
+            let instrument: Instrument = result.context("Failed to parse instrument from cache")?;
             instruments.push(instrument);
         }
 
@@ -149,7 +150,8 @@ impl InstrumentCache {
             let path = entry.path();
 
             if path.extension().is_some_and(|ext| ext == "csv") {
-                fs::remove_file(&path).context(format!("Failed to remove cache file: {:?}", path))?;
+                fs::remove_file(&path)
+                    .context(format!("Failed to remove cache file: {:?}", path))?;
                 cleared_count += 1;
                 println!("Removed: {:?}", path.file_name().unwrap_or_default());
             }

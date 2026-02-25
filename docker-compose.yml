@@ -1,57 +1,153 @@
-# Docker Compose for Zerodha CLI Development
+# Docker Compose for Zerodha CLI
 #
-# This is used for building and testing the CLI in a consistent environment.
-# The CLI itself runs locally, not in Docker.
-
-version: "3.9"
+# Provides development and testing environments for the Zerodha CLI.
+# The CLI itself is distributed as a native binary, but this setup
+# ensures consistent build and test environments.
 
 services:
-  # Build environment for Rust CLI
-  builder:
-    image: rust:1.75-bookworm
-    working_dir: /build
+  # Production image - runs the CLI in a container
+  # Use for: consistent environment testing, automation scripts
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: zerodha-cli:1.0.0
+    container_name: zerodha-cli-app
     volumes:
-      - .:/build
-    command: |
-      bash -c "cargo build --release && cp target/release/kite /output/"
-    output_dir: &output_dir ./output
-
-  # Test environment
-  test:
-    image: rust:1.75-bookworm
-    working_dir: /build
-    volumes:
-      - .:/build
+      # Mount config directory for persistent credentials
+      - zerodha-config:/home/zerodha/.config/zerodha-cli
+      # Mount cache directory for instrument cache
+      - zerodha-cache:/home/zerodha/.cache/zerodha-cli
+      # Mount history directory for shell history
+      - zerodha-history:/home/zerodha/.local/share/zerodha-cli
     environment:
-      - RUST_BACKTRACE=1
       - ZERODHA_API_KEY=${ZERODHA_API_KEY}
       - ZERODHA_API_SECRET=${ZERODHA_API_SECRET}
       - ZERODHA_ACCESS_TOKEN=${ZERODHA_ACCESS_TOKEN}
-    command: cargo test --lib
+    command: ["--version"]
+    restart: unless-stopped
+
+  # Build service - creates production binary
+  # Use for: building binary in clean environment
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: zerodha-cli-builder:1.0.0
+    container_name: zerodha-cli-build
+    volumes:
+      - .:/build
+      - ./output:/build/output
+    working_dir: /build
+    command: ["cargo", "build", "--release", "--workspace"]
+    profiles:
+      - build
+
+  # Test service - runs all tests
+  # Use for: automated testing in CI/CD
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: zerodha-cli-builder:1.0.0
+    container_name: zerodha-cli-test
+    volumes:
+      - .:/build
+    working_dir: /build
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=info
+      - ZERODHA_API_KEY=${ZERODHA_API_KEY}
+      - ZERODHA_API_SECRET=${ZERODHA_API_SECRET}
+      - ZERODHA_ACCESS_TOKEN=${ZERODHA_ACCESS_TOKEN}
+    command: ["cargo", "test", "--workspace", "--", "--test-threads=1"]
     profiles:
       - test
 
-  # Lint checks
+  # Lint service - runs clippy and format checks
+  # Use for: code quality checks before PR
   lint:
-    image: rust:1.75-bookworm
-    working_dir: /build
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: zerodha-cli-builder:1.0.0
+    container_name: zerodha-cli-lint
     volumes:
       - .:/build
+    working_dir: /build
     command: |
-      bash -c "cargo fmt -- --check && cargo clippy -- -D warnings"
+      bash -c "
+      echo 'Running cargo fmt check...' &&
+      cargo fmt --all -- --check &&
+      echo 'Running cargo clippy...' &&
+      cargo clippy --workspace --all-targets -- -D warnings &&
+      echo 'All checks passed!'
+      "
     profiles:
       - lint
 
-  # Build for all platforms (requires cross)
-  cross-build:
-    image: rust:1.75-bookworm
-    working_dir: /build
+  # Development service - interactive development
+  # Use for: local development with cargo tools
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: zerodha-cli-builder:1.0.0
+    container_name: zerodha-cli-dev
     volumes:
       - .:/build
-    command: |
-      bash -c "cargo install cross && \
-        cross build --target x86_64-unknown-linux-gnu --release && \
-        cross build --target aarch64-unknown-linux-gnu --release && \
-        cross build --target x86_64-pc-windows-gnu --release"
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-target:/build/target
+    working_dir: /build
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=debug
+    command: ["bash"]
+    stdin_open: true
+    tty: true
     profiles:
-      - build
+      - dev
+
+  # Release build service - optimized binary for distribution
+  # Use for: creating release artifacts
+  release:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: zerodha-cli-builder:1.0.0
+    container_name: zerodha-cli-release
+    volumes:
+      - .:/build
+      - ./release:/build/release
+    working_dir: /build
+    command: |
+      bash -c "
+      cargo build --release --workspace &&
+      ls -lh target/release/kite &&
+      cp target/release/kite release/
+      "
+    profiles:
+      - release
+
+# Named volumes for data persistence
+volumes:
+  zerodha-config:
+    driver: local
+  zerodha-cache:
+    driver: local
+  zerodha-history:
+    driver: local
+  cargo-cache:
+    driver: local
+  cargo-target:
+    driver: local
+
+networks:
+  default:
+    name: zerodha-cli-network
