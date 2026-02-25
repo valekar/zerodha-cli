@@ -486,7 +486,7 @@ pub struct PlaceOrder {
 }
 
 /// Place order response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderResponse {
     pub order_id: String,
     pub status: OrderStatus,
@@ -494,7 +494,7 @@ pub struct OrderResponse {
 }
 
 /// Cancel order response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CancelResponse {
     pub order_id: String,
     pub status: String,
@@ -565,7 +565,7 @@ pub struct ModifyGTT {
 }
 
 /// GTT response
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GTTResponse {
     pub trigger_id: u64,
     pub status: String,
