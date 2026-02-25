@@ -12,6 +12,7 @@ mod status;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+use std::sync::Arc;
 use zerodha_cli_core::{api::KiteConnectClient, config::Config};
 
 #[derive(Parser)]
@@ -472,7 +473,11 @@ pub async fn run() -> Result<()> {
         }
         Commands::Gtt(gtt_cmd) => gtt::run_gtt(gtt_cmd, &api_client, &cli.output).await?,
         Commands::Status => status::run_status(&config, &api_client).await?,
-        Commands::Shell => shell::run_shell(&config, &api_client, &cli.output).await?,
+        Commands::Shell => {
+            let config_arc = Arc::new(tokio::sync::Mutex::new(config));
+            let api_client_arc = Arc::new(api_client);
+            shell::run_shell(config_arc, api_client_arc, &cli.output).await?
+        }
     }
 
     Ok(())

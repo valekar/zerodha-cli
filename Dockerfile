@@ -2,7 +2,7 @@
 # Builds a production-ready Rust binary in a clean environment
 
 # Stage 1: Builder
-FROM rust:1.82-slim-bookworm AS builder
+FROM rust:1.83-slim-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Rust components for linting
+RUN rustup component add rustfmt clippy
 
 WORKDIR /build
 

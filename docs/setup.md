@@ -328,6 +328,26 @@ curl -I https://kite.zerodha.com
 
 While zerodha-cli is a native binary, you can run it in Docker:
 
+### Option 1: Build and Run with Docker Compose (Recommended)
+
+```bash
+# Build production image
+docker compose build app
+
+# Start service
+docker compose up -d app
+
+# Run commands
+docker compose exec app kite --help
+docker compose exec app kite auth status
+docker compose exec app kite quotes get NSE:INFY
+
+# Stop service
+docker compose down
+```
+
+### Option 2: Build Directly with Docker
+
 ```bash
 # Build
 docker build -t zerodha-cli .
@@ -337,6 +357,50 @@ docker run --rm -it \
   -v ~/.config/zerodha-cli:/root/.config/zerodha-cli \
   zerodha-cli auth status
 ```
+
+### Option 3: Development Environment with Docker Compose
+
+```bash
+# Start development container
+docker compose --profile dev up -d dev
+
+# Enter development container
+docker compose exec dev bash
+
+# Inside dev container, build and run tests
+cargo build --release
+cargo test
+```
+
+### Option 4: Run Tests in Docker
+
+```bash
+# Run test suite
+docker compose --profile test run test
+
+# Run lint checks
+docker compose --profile lint run lint
+```
+
+### Docker Services
+
+| Service | Profile | Purpose |
+|----------|----------|-----------|
+| `app` | default | Production CLI runtime |
+| `dev` | dev | Interactive development environment |
+| `test` | test | Automated testing |
+| `lint` | lint | Code quality checks |
+| `release` | release | Build release artifacts |
+
+### Persistent Volumes
+
+Docker Compose creates named volumes for data persistence:
+
+- `zerodha-cli_zerodha-config`: Configuration files (~/.config/zerodha-cli)
+- `zerodha-cli_zerodha-cache`: Instrument cache (~/.cache/zerodha-cli)
+- `zerodha-cli_zerodha-history`: Shell history (~/.local/share/zerodha-cli)
+
+Data persists across container restarts.
 
 ---
 

@@ -103,7 +103,7 @@ async fn execute_shell_command(
     api_client: Arc<KiteConnectClient>,
     default_output_format: &str,
 ) -> Result<()> {
-    let parts: Vec<&str> = shellwords::split(line)
+    let parts: Vec<String> = shellwords::split(line)
         .with_context(|| format!("Failed to parse command: {}", line))?;
 
     if parts.is_empty() {
@@ -146,12 +146,12 @@ async fn execute_shell_command(
                     }
                     let api_key = args
                         .iter()
-                        .position(|&a| a == "--api-key")
+                        .position(|a| a == "--api-key")
                         .and_then(|i| args.get(i + 1))
                         .ok_or_else(|| anyhow::anyhow!("Missing --api-key"))?;
                     let api_secret = args
                         .iter()
-                        .position(|&a| a == "--api-secret")
+                        .position(|a| a == "--api-secret")
                         .and_then(|i| args.get(i + 1))
                         .ok_or_else(|| anyhow::anyhow!("Missing --api-secret"))?;
                     let auth_cmd = AuthCommands {
@@ -178,10 +178,10 @@ async fn execute_shell_command(
                 "list" => {
                     let exchange = args
                         .iter()
-                        .position(|&a| a == "--exchange" || a == "-e")
+                        .position(|a| a == "--exchange" || a == "-e")
                         .and_then(|i| args.get(i + 1))
-                        .map(|s| s.to_string());
-                    let refresh = args.contains(&"--refresh") || args.contains(&"-r");
+                        .cloned();
+                    let refresh = args.contains(&"--refresh".to_string()) || args.contains(&"-r".to_string());
                     let instruments_cmd = InstrumentsCommands {
                         command: InstrumentsSubcommands::List {
                             exchange,
@@ -198,9 +198,9 @@ async fn execute_shell_command(
                     let query = args[1].to_string();
                     let exchange = args
                         .iter()
-                        .position(|&a| a == "--exchange" || a == "-e")
+                        .position(|a| a == "--exchange" || a == "-e")
                         .and_then(|i| args.get(i + 1))
-                        .map(|s| s.to_string());
+                        .cloned();
                     let instruments_cmd = InstrumentsCommands {
                         command: InstrumentsSubcommands::Search { query, exchange },
                     };
@@ -235,7 +235,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes get <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols = args[1..].iter().map(|s| s.to_string()).collect();
+                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Get { symbols },
                     };
@@ -246,7 +246,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes ohlc <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols = args[1..].iter().map(|s| s.to_string()).collect();
+                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Ohlc { symbols },
                     };
@@ -257,7 +257,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes ltp <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols = args[1..].iter().map(|s| s.to_string()).collect();
+                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Ltp { symbols },
                     };
@@ -279,9 +279,9 @@ async fn execute_shell_command(
                 "list" => {
                     let status = args
                         .iter()
-                        .position(|&a| a == "--status" || a == "-s")
+                        .position(|a| a == "--status" || a == "-s")
                         .and_then(|i| args.get(i + 1))
-                        .map(|s| s.to_string());
+                        .cloned();
                     let orders_cmd = OrdersCommands {
                         command: OrdersSubcommands::List { status },
                     };
@@ -306,10 +306,10 @@ async fn execute_shell_command(
                     let order_id = args[1].to_string();
                     let variety = args
                         .iter()
-                        .position(|&a| a == "--variety")
+                        .position(|a| a == "--variety")
                         .and_then(|i| args.get(i + 1))
-                        .unwrap_or(&"regular")
-                        .to_string();
+                        .cloned()
+                        .unwrap_or_else(|| "regular".to_string());
                     let orders_cmd = OrdersCommands {
                         command: OrdersSubcommands::Cancel {
                             order_id,
@@ -319,7 +319,7 @@ async fn execute_shell_command(
                     orders::run_orders(orders_cmd, &*config.lock().await, &api_client, default_output_format).await?;
                 }
                 "trades" => {
-                    let order_id = args.get(1).map(|s| s.to_string());
+                    let order_id = args.get(1).cloned();
                     let orders_cmd = OrdersCommands {
                         command: OrdersSubcommands::Trades { order_id },
                     };
@@ -346,8 +346,8 @@ async fn execute_shell_command(
                     portfolio::run_portfolio(portfolio_cmd, &api_client, default_output_format).await?;
                 }
                 "positions" => {
-                    let net = args.contains(&"--net");
-                    let day = args.contains(&"--day");
+                    let net = args.contains(&"--net".to_string());
+                    let day = args.contains(&"--day".to_string());
                     let portfolio_cmd = PortfolioCommands {
                         command: PortfolioSubcommands::Positions { net, day },
                     };
