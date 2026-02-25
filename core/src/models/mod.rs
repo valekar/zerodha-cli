@@ -53,6 +53,36 @@ pub enum Segment {
     MCX,
     #[serde(rename = "CDS")]
     CDS,
+    #[serde(rename = "NSE-FUT")]
+    NSEFUT,
+    #[serde(rename = "NSE-OPT")]
+    NSEOPT,
+    #[serde(rename = "BSE-FUT")]
+    BSEFUT,
+    #[serde(rename = "BSE-OPT")]
+    BSEOPT,
+    #[serde(rename = "NFO-FUT")]
+    NFOFUT,
+    #[serde(rename = "NFO-OPT")]
+    NFOOPT,
+    #[serde(rename = "BFO-FUT")]
+    BFOFUT,
+    #[serde(rename = "BFO-OPT")]
+    BFOOPT,
+    #[serde(rename = "MCX-FUT")]
+    MCXFUT,
+    #[serde(rename = "MCX-OPT")]
+    MCXOPT,
+    #[serde(rename = "CDS-FUT")]
+    CDSFUT,
+    #[serde(rename = "CDS-OPT")]
+    CDSOPT,
+    #[serde(rename = "INDICES")]
+    INDICES,
+    #[serde(rename = "NSEIX")]
+    NSEIX,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,6 +99,14 @@ pub enum Exchange {
     MCX,
     #[serde(rename = "CDS")]
     CDS,
+    #[serde(rename = "INDICES")]
+    INDICES,
+    #[serde(rename = "NSEIX")]
+    NSEIX,
+    #[serde(rename = "GLOBAL")]
+    GLOBAL,
+    #[serde(other)]
+    Unknown,
 }
 
 impl Display for Exchange {
@@ -80,6 +118,10 @@ impl Display for Exchange {
             Exchange::BFO => write!(f, "BFO"),
             Exchange::MCX => write!(f, "MCX"),
             Exchange::CDS => write!(f, "CDS"),
+            Exchange::INDICES => write!(f, "INDICES"),
+            Exchange::NSEIX => write!(f, "NSEIX"),
+            Exchange::GLOBAL => write!(f, "GLOBAL"),
+            Exchange::Unknown => write!(f, "UNKNOWN"),
         }
     }
 }

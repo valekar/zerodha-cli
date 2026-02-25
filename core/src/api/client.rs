@@ -193,12 +193,9 @@ impl KiteConnectClient {
 
     /// List all instruments from exchange
     pub async fn list_instruments(&self, exchange: Option<&str>) -> Result<Vec<Instrument>> {
-        let path = match exchange {
-            Some(ex) => format!("/instruments/{}", ex.to_lowercase()),
-            None => "/instruments".to_string(),
-        };
-
-        let req = self.build_auth_request(Method::GET, &path).await?;
+        // Instruments endpoint requires auth and returns all instruments
+        // Exchange filtering is done client-side
+        let req = self.build_auth_request(Method::GET, "/instruments").await?;
 
         // Instruments are returned as CSV text
         self.rate_limiter.acquire().await?;
@@ -223,7 +220,14 @@ impl KiteConnectClient {
 
         for result in rdr.deserialize() {
             let instrument: Instrument = result.context("Failed to parse instrument")?;
-            instruments.push(instrument);
+            // Filter by exchange if specified
+            if let Some(ref ex) = exchange {
+                if instrument.exchange.to_string().to_lowercase() == ex.to_lowercase() {
+                    instruments.push(instrument);
+                }
+            } else {
+                instruments.push(instrument);
+            }
         }
 
         Ok(instruments)
@@ -425,7 +429,15 @@ impl KiteConnectClient {
             .build_auth_request(Method::PUT, "/portfolio/positions")
             .await?
             .json(req);
-        self.execute(http_req).await
+
+        #[derive(Deserialize)]
+        struct ConvertResponse {
+            #[allow(dead_code)]
+            data: Option<serde_json::Value>,
+        }
+
+        let _response: ConvertResponse = self.execute(http_req).await?;
+        Ok(())
     }
 
     // ==================== MARGINS API ====================
