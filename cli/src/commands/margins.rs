@@ -38,7 +38,10 @@ pub async fn run_margins_equity(output_format: &str, api_client: &KiteConnectCli
     if output_format == "json" {
         println!("{}", serde_json::to_string_pretty(&equity)?);
     } else {
-        print_equity_margins(&equity.equity);
+        match &equity.equity {
+            Some(margin) => print_equity_margins(margin),
+            None => println!("No equity margin data available"),
+        }
     }
 
     Ok(())
@@ -53,7 +56,10 @@ pub async fn run_margins_commodity(
     if output_format == "json" {
         println!("{}", serde_json::to_string_pretty(&commodity)?);
     } else {
-        print_commodity_margins(&commodity.commodity);
+        match &commodity.commodity {
+            Some(margin) => print_commodity_margins(margin),
+            None => println!("No commodity margin data available"),
+        }
     }
 
     Ok(())

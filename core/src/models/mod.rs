@@ -336,6 +336,7 @@ pub struct Holding {
     pub instrument_token: u64,
     pub isin: String,
     pub quantity: i32,
+    #[serde(default)]
     pub authorised_quantity: i32,
     pub average_price: f64,
     pub last_price: f64,
@@ -353,28 +354,47 @@ pub struct Position {
     pub instrument_token: u64,
     pub product: Product,
     pub quantity: i32,
+    #[serde(default)]
     pub overnight_quantity: i32,
+    #[serde(default)]
     pub multiplier: i32,
     pub average_price: f64,
     pub close_price: f64,
     pub last_price: f64,
     pub pnl: f64,
+    #[serde(default)]
     pub m2m: f64,
+    #[serde(default)]
     pub unrealised: f64,
+    #[serde(default)]
     pub realised: f64,
+    #[serde(default)]
     pub buy_quantity: i32,
+    #[serde(default)]
     pub buy_price: f64,
+    #[serde(default)]
     pub buy_value: f64,
+    #[serde(default)]
     pub buy_m2m: f64,
+    #[serde(default)]
     pub sell_quantity: i32,
+    #[serde(default)]
     pub sell_price: f64,
+    #[serde(default)]
     pub sell_value: f64,
+    #[serde(default)]
     pub sell_m2m: f64,
+    #[serde(default)]
     pub day_buy_quantity: i32,
+    #[serde(default)]
     pub day_buy_price: f64,
+    #[serde(default)]
     pub day_buy_value: f64,
+    #[serde(default)]
     pub day_sell_quantity: i32,
+    #[serde(default)]
     pub day_sell_price: f64,
+    #[serde(default)]
     pub day_sell_value: f64,
 }
 
@@ -448,13 +468,15 @@ pub struct MarginResponse {
 /// Equity margins
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EquityMargins {
-    pub equity: Margin,
+    #[serde(default)]
+    pub equity: Option<Margin>,
 }
 
 /// Commodity margins
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommodityMargins {
-    pub commodity: Margin,
+    #[serde(default)]
+    pub commodity: Option<Margin>,
 }
 
 // ==================== GTT ====================

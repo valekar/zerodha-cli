@@ -249,8 +249,9 @@ impl KiteConnectClient {
             });
         }
 
-        let symbols_str = symbols.join(",");
-        let path = format!("/quote/{}", symbols_str);
+        let symbols_param: Vec<String> = symbols.iter().map(|s| format!("i={}", s)).collect();
+        let query_string = symbols_param.join("&");
+        let path = format!("/quote?{}", query_string);
 
         let req = self.build_auth_request(Method::GET, &path).await?;
         self.execute(req).await
@@ -264,8 +265,9 @@ impl KiteConnectClient {
             });
         }
 
-        let symbols_str = symbols.join(",");
-        let path = format!("/quote/ohlc?i={}", symbols_str);
+        let symbols_param: Vec<String> = symbols.iter().map(|s| format!("i={}", s)).collect();
+        let query_string = symbols_param.join("&");
+        let path = format!("/quote/ohlc?{}", query_string);
 
         let req = self.build_auth_request(Method::GET, &path).await?;
         self.execute(req).await
@@ -279,8 +281,9 @@ impl KiteConnectClient {
             });
         }
 
-        let symbols_str = symbols.join(",");
-        let path = format!("/quote/ltp?i={}", symbols_str);
+        let symbols_param: Vec<String> = symbols.iter().map(|s| format!("i={}", s)).collect();
+        let query_string = symbols_param.join("&");
+        let path = format!("/quote/ltp?{}", query_string);
 
         let req = self.build_auth_request(Method::GET, &path).await?;
         self.execute(req).await
@@ -325,7 +328,14 @@ impl KiteConnectClient {
             .build_auth_request(Method::POST, "/orders/regular")
             .await?
             .json(order);
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct OrderResponseWrapper {
+            data: OrderResponse,
+        }
+
+        let response: OrderResponseWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// Modify an existing order
@@ -335,14 +345,28 @@ impl KiteConnectClient {
             .build_auth_request(Method::PUT, &path)
             .await?
             .json(order);
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct OrderResponseWrapper {
+            data: OrderResponse,
+        }
+
+        let response: OrderResponseWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// Cancel an order
     pub async fn cancel_order(&self, order_id: &str, variety: &str) -> Result<CancelResponse> {
         let path = format!("/orders/{}/{}", variety, order_id);
         let req = self.build_auth_request(Method::DELETE, &path).await?;
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct CancelResponseWrapper {
+            data: CancelResponse,
+        }
+
+        let response: CancelResponseWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// List trades
@@ -385,7 +409,14 @@ impl KiteConnectClient {
         let req = self
             .build_auth_request(Method::GET, "/portfolio/positions")
             .await?;
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct PositionsWrapper {
+            data: PositionsResponse,
+        }
+
+        let response: PositionsWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// Convert position
@@ -481,14 +512,28 @@ impl KiteConnectClient {
             .build_auth_request(Method::POST, "/gtt/triggers")
             .await?
             .json(req);
-        self.execute(http_req).await
+
+        #[derive(Deserialize)]
+        struct GTTResponseWrapper {
+            data: GTTResponse,
+        }
+
+        let response: GTTResponseWrapper = self.execute(http_req).await?;
+        Ok(response.data)
     }
 
     /// Modify GTT order
     pub async fn modify_gtt(&self, trigger_id: u64, req: &ModifyGTT) -> Result<GTTResponse> {
         let path = format!("/gtt/triggers/{}", trigger_id);
         let http_req = self.build_auth_request(Method::PUT, &path).await?.json(req);
-        self.execute(http_req).await
+
+        #[derive(Deserialize)]
+        struct GTTResponseWrapper {
+            data: GTTResponse,
+        }
+
+        let response: GTTResponseWrapper = self.execute(http_req).await?;
+        Ok(response.data)
     }
 
     /// Delete GTT order
