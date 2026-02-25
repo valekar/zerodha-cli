@@ -235,7 +235,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes get <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
+                    let symbols: Vec<String> = args[1..].to_vec();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Get { symbols },
                     };
@@ -246,7 +246,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes ohlc <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
+                    let symbols: Vec<String> = args[1..].to_vec();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Ohlc { symbols },
                     };
@@ -257,7 +257,7 @@ async fn execute_shell_command(
                         eprintln!("Usage: quotes ltp <SYMBOL> [<SYMBOL> ...]");
                         return Ok(());
                     }
-                    let symbols: Vec<String> = args[1..].iter().cloned().collect();
+                    let symbols: Vec<String> = args[1..].to_vec();
                     let quotes_cmd = QuotesCommands {
                         command: QuotesSubcommands::Ltp { symbols },
                     };
