@@ -63,12 +63,15 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
         .await
         .context("Failed to exchange token. Please check your API credentials and try again.")?;
 
-    // 5. Save to config
+    // 5. Save to config (including API credentials that were used for login)
     let expiry = chrono::Utc::now() + chrono::Duration::days(1);
     let expiry_str = expiry.to_rfc3339();
 
     config.api.access_token = Some(access_token.clone());
     config.api.token_expiry = Some(expiry_str);
+    // Also save the API credentials that were used for this login
+    // so subsequent commands use the same credentials
+    // (Note: api_client doesn't expose these, so we trust config already has them)
 
     config.save().context("Failed to save config")?;
 

@@ -450,7 +450,11 @@ pub async fn run() -> Result<()> {
 
     // Set access token if available
     if let Some(ref token) = config.api.access_token {
+        eprintln!("Debug: API key from config ({} chars): {}", config.api.api_key.len(), &config.api.api_key[..8.min(config.api.api_key.len())]);
+        eprintln!("Debug: Access token from config ({} chars): {}...", token.len(), &token[..16.min(token.len())]);
         api_client.set_access_token(token.clone()).await?;
+    } else {
+        eprintln!("Debug: No access token found in config");
     }
 
     // Execute command

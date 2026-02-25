@@ -65,33 +65,37 @@ fn print_margins(margins: &zerodha_cli_core::models::MarginResponse) {
     let mut table = Table::new();
     table.set_header(vec!["Segment", "Net", "Available", "Used"]);
 
-    let equity_avail = margins.equity.available.cash
-        + margins.equity.available.collateral
-        + margins.equity.available.live_balance;
-    let equity_used = margins.equity.utilised.debits
-        + margins.equity.utilised.exposure
-        + margins.equity.utilised.options_premium;
+    if let Some(ref equity) = margins.equity {
+        let equity_avail = equity.available.cash
+            + equity.available.collateral
+            + equity.available.live_balance;
+        let equity_used = equity.utilised.debits
+            + equity.utilised.exposure
+            + equity.utilised.options_premium;
 
-    table.add_row(vec![
-        Cell::new("Equity"),
-        Cell::new(format!("₹{:.2}", margins.equity.net)),
-        Cell::new(format!("₹{:.2}", equity_avail)),
-        Cell::new(format!("₹{:.2}", equity_used)),
-    ]);
+        table.add_row(vec![
+            Cell::new("Equity"),
+            Cell::new(format!("₹{:.2}", equity.net)),
+            Cell::new(format!("₹{:.2}", equity_avail)),
+            Cell::new(format!("₹{:.2}", equity_used)),
+        ]);
+    }
 
-    let commodity_avail = margins.commodity.available.cash
-        + margins.commodity.available.collateral
-        + margins.commodity.available.live_balance;
-    let commodity_used = margins.commodity.utilised.debits
-        + margins.commodity.utilised.exposure
-        + margins.commodity.utilised.options_premium;
+    if let Some(ref commodity) = margins.commodity {
+        let commodity_avail = commodity.available.cash
+            + commodity.available.collateral
+            + commodity.available.live_balance;
+        let commodity_used = commodity.utilised.debits
+            + commodity.utilised.exposure
+            + commodity.utilised.options_premium;
 
-    table.add_row(vec![
-        Cell::new("Commodity"),
-        Cell::new(format!("₹{:.2}", margins.commodity.net)),
-        Cell::new(format!("₹{:.2}", commodity_avail)),
-        Cell::new(format!("₹{:.2}", commodity_used)),
-    ]);
+        table.add_row(vec![
+            Cell::new("Commodity"),
+            Cell::new(format!("₹{:.2}", commodity.net)),
+            Cell::new(format!("₹{:.2}", commodity_avail)),
+            Cell::new(format!("₹{:.2}", commodity_used)),
+        ]);
+    }
 
     table.set_content_arrangement(ContentArrangement::Dynamic);
     println!("{table}");

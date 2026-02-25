@@ -404,7 +404,14 @@ impl KiteConnectClient {
         let req = self
             .build_auth_request(Method::GET, "/user/margins")
             .await?;
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct MarginsWrapper {
+            data: MarginResponse,
+        }
+
+        let response: MarginsWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// Get equity margins
@@ -412,7 +419,14 @@ impl KiteConnectClient {
         let req = self
             .build_auth_request(Method::GET, "/user/margins/equity")
             .await?;
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct EquityMarginsWrapper {
+            data: EquityMargins,
+        }
+
+        let response: EquityMarginsWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     /// Get commodity margins
@@ -420,7 +434,14 @@ impl KiteConnectClient {
         let req = self
             .build_auth_request(Method::GET, "/user/margins/commodity")
             .await?;
-        self.execute(req).await
+
+        #[derive(Deserialize)]
+        struct CommodityMarginsWrapper {
+            data: CommodityMargins,
+        }
+
+        let response: CommodityMarginsWrapper = self.execute(req).await?;
+        Ok(response.data)
     }
 
     // ==================== GTT API ====================

@@ -390,39 +390,59 @@ pub struct PositionsResponse {
 /// Margin
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Margin {
+    #[serde(default)]
     pub enabled: bool,
+    #[serde(default)]
     pub net: f64,
+    #[serde(default)]
     pub available: MarginDetail,
+    #[serde(default)]
     pub utilised: MarginUtilised,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MarginDetail {
+    #[serde(default)]
     pub cash: f64,
+    #[serde(default)]
     pub opening_balance: f64,
+    #[serde(default)]
     pub live_balance: f64,
+    #[serde(default)]
     pub collateral: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MarginUtilised {
+    #[serde(default)]
     pub debits: f64,
+    #[serde(default)]
     pub exposure: f64,
+    #[serde(default)]
     pub options_premium: f64,
+    #[serde(default)]
     pub payout: f64,
+    #[serde(default)]
     pub span: f64,
+    #[serde(default)]
     pub holding_sales: f64,
+    #[serde(default)]
     pub turnaround: f64,
+    #[serde(default)]
     pub m2m_unrealised: f64,
+    #[serde(default)]
     pub m2m_realised: f64,
+    #[serde(default)]
     pub stock_collateral: f64,
 }
 
 /// Margin response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MarginResponse {
-    pub equity: Margin,
-    pub commodity: Margin,
+    #[serde(default)]
+    pub equity: Option<Margin>,
+    #[serde(default)]
+    pub commodity: Option<Margin>,
 }
 
 /// Equity margins
