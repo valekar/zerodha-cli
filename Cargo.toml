@@ -1,0 +1,46 @@
+[workspace]
+resolver = "2"
+members = ["cli", "core"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+authors = ["Zerodha CLI Team"]
+license = "MIT"
+repository = "https://github.com/yourusername/zerodha-cli"
+
+[workspace.dependencies]
+# Workspace members
+zerodha-cli-core = { path = "./core" }
+
+# Core dependencies (shared)
+tokio = { version = "1.38", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+comfy-table = "7.1"
+rustyline = "14.0"
+
+# API
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# Config
+toml = "0.8"
+dirs = "5.0"
+
+# Utilities
+webbrowser = "1.0"
+csv = "1.3"
+hex = "0.4"
+sha2 = "0.10"
+
+# Rate limiting
+governor = "0.6"
+nonzero_ext = "0.3"

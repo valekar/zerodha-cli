@@ -1,0 +1,22 @@
+[package]
+name = "zerodha-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "kite"
+path = "src/main.rs"
+
+[dependencies]
+zerodha-cli-core.workspace = true
+clap.workspace = true
+clap_complete = "4.5"
+comfy-table.workspace = true
+anyhow.workspace = true
+
+# Runtime and logging
+tokio.workspace = true
+tracing-subscriber.workspace = true

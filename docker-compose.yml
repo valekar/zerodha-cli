@@ -1,0 +1,57 @@
+# Docker Compose for Zerodha CLI Development
+#
+# This is used for building and testing the CLI in a consistent environment.
+# The CLI itself runs locally, not in Docker.
+
+version: "3.9"
+
+services:
+  # Build environment for Rust CLI
+  builder:
+    image: rust:1.75-bookworm
+    working_dir: /build
+    volumes:
+      - .:/build
+    command: |
+      bash -c "cargo build --release && cp target/release/kite /output/"
+    output_dir: &output_dir ./output
+
+  # Test environment
+  test:
+    image: rust:1.75-bookworm
+    working_dir: /build
+    volumes:
+      - .:/build
+    environment:
+      - RUST_BACKTRACE=1
+      - ZERODHA_API_KEY=${ZERODHA_API_KEY}
+      - ZERODHA_API_SECRET=${ZERODHA_API_SECRET}
+      - ZERODHA_ACCESS_TOKEN=${ZERODHA_ACCESS_TOKEN}
+    command: cargo test --lib
+    profiles:
+      - test
+
+  # Lint checks
+  lint:
+    image: rust:1.75-bookworm
+    working_dir: /build
+    volumes:
+      - .:/build
+    command: |
+      bash -c "cargo fmt -- --check && cargo clippy -- -D warnings"
+    profiles:
+      - lint
+
+  # Build for all platforms (requires cross)
+  cross-build:
+    image: rust:1.75-bookworm
+    working_dir: /build
+    volumes:
+      - .:/build
+    command: |
+      bash -c "cargo install cross && \
+        cross build --target x86_64-unknown-linux-gnu --release && \
+        cross build --target aarch64-unknown-linux-gnu --release && \
+        cross build --target x86_64-pc-windows-gnu --release"
+    profiles:
+      - build
