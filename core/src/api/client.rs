@@ -160,30 +160,33 @@ impl KiteConnectClient {
         let checksum_input = format!("{}{}{}", self.api_key, request_token, self.api_secret);
         let checksum = sha256_digest(&checksum_input);
 
-        let body = serde_json::json!({
-            "api_key": self.api_key,
-            "request_token": request_token,
-            "checksum": checksum,
-        });
-
         let req = self
             .build_request(Method::POST, "/session/token")
-            .json(&body);
+            .form(&[
+                ("api_key", self.api_key.as_str()),
+                ("request_token", request_token),
+                ("checksum", &checksum),
+            ]);
 
         #[derive(Deserialize)]
         #[allow(dead_code)]
         struct SessionData {
             #[allow(dead_code)]
-            user_id: String,
+            user_id: Option<String>,
             access_token: String,
         }
 
-        let response: SessionData = self.execute(req).await?;
+        #[derive(Deserialize)]
+        struct TokenResponse {
+            data: SessionData,
+        }
+
+        let response: TokenResponse = self.execute(req).await?;
 
         // Store access token
-        self.set_access_token(response.access_token.clone()).await?;
+        self.set_access_token(response.data.access_token.clone()).await?;
 
-        Ok(response.access_token)
+        Ok(response.data.access_token)
     }
 
     // ==================== INSTRUMENTS API ====================

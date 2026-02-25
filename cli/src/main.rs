@@ -9,6 +9,9 @@ async fn main() -> Result<()> {
     // Initialize logging
     tracing_subscriber::fmt::init();
 
+    // Load .env from current directory
+    dotenv::from_filename(".env").ok();
+    
     // Run CLI
     zerodha_cli::run().await
 }

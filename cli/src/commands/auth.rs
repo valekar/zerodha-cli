@@ -29,12 +29,27 @@ pub async fn run_auth_login(
     config: &mut Config,
     api_client: &zerodha_cli_core::api::KiteConnectClient,
 ) -> Result<()> {
+    // Check if already authenticated
+    match auth::status(config) {
+        AuthStatus::Authenticated { expiry } => {
+            println!("Already authenticated!");
+            if let Some(expiry_str) = expiry {
+                if let Ok(expiry) = chrono::DateTime::parse_from_rfc3339(&expiry_str) {
+                    println!("Token expires: {}", expiry.format("%Y-%m-%d %H:%M:%S UTC"));
+                }
+            }
+            println!("\nRun 'kite auth logout' first if you want to login with different credentials.");
+            return Ok(());
+        }
+        _ => {}
+    }
+
     println!("Initiating OAuth login flow...");
     let token = auth::login(api_client, config)
         .await
         .context("Failed to complete login")?;
     println!("✓ Logged in successfully!");
-    println!("Access token: {}...", &token[..8.min(token.len())]);
+    println!("Access token: {}", token);
     Ok(())
 }
 

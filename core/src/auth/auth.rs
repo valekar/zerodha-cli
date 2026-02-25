@@ -36,7 +36,10 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
     println!("Example URL: https://kite.zerodha.com/connect/login?v=3&api_key=XXX&request_token=abc123\n");
 
     // 3. Prompt user for request_token
-    print!("Enter the 'request_token' from the URL: ");
+    println!("\nAfter completing login, you'll be redirected to a URL.");
+    println!("Copy the FULL request_token from the URL (everything after 'request_token=').\n");
+    
+    print!("Enter the request_token: ");
 
     // Use tokio for async stdin reading
     let mut request_token = String::new();
@@ -48,6 +51,9 @@ pub async fn login(api_client: &KiteConnectClient, config: &mut Config) -> Resul
     if request_token.is_empty() {
         anyhow::bail!("Request token cannot be empty");
     }
+
+    println!("Debug: Token length = {} chars", request_token.len());
+    println!("Debug: Token prefix = {}", &request_token[..request_token.len().min(10)]);
 
     // 4. Exchange for access token
     println!("\nExchanging request token for access token...");

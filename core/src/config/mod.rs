@@ -4,6 +4,12 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Initialize dotenv (load .env file if present)
+fn init_dotenv() {
+    // Try to load .env from current directory or home directory
+    let _ = dotenv::from_filename(".env").or_else(|_| dotenv::from_filename("~/.env")).ok();
+}
+
 /// Configuration file structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -76,15 +82,40 @@ impl Default for Config {
 impl Config {
     /// Load config from file
     pub fn load() -> Result<Self> {
+        // Initialize dotenv (load .env file if present)
+        init_dotenv();
+        // First try to load from config file
         let config_path = Self::config_path().context("Failed to get config path")?;
 
-        if config_path.exists() {
+        let mut config = if config_path.exists() {
             let content = std::fs::read_to_string(&config_path).context("Failed to read config")?;
             let config: Self = toml::from_str(&content).context("Failed to parse config")?;
-            Ok(config)
+            config
         } else {
-            Ok(Self::default())
+            Self::default()
+        };
+
+        // Override with environment variables if set
+        if let Ok(api_key) = std::env::var("ZERODHA_API_KEY") {
+            if !api_key.is_empty() {
+                eprintln!("Debug: Loaded API key from env: {} chars", api_key.len());
+                config.api.api_key = api_key;
+            }
+        } else {
+            eprintln!("Debug: ZERODHA_API_KEY not set");
         }
+        if let Ok(api_secret) = std::env::var("ZERODHA_API_SECRET") {
+            if !api_secret.is_empty() {
+                config.api.api_secret = api_secret;
+            }
+        }
+        if let Ok(access_token) = std::env::var("ZERODHA_ACCESS_TOKEN") {
+            if !access_token.is_empty() {
+                config.api.access_token = Some(access_token);
+            }
+        }
+
+        Ok(config)
     }
 
     /// Save config to file
